@@ -1,0 +1,81 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+.anislot_platform/
+
+# uv
+.uv-cache/
+
+# Packaging and build output
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Type-checker and linter caches
+.mypy_cache/
+.pyright/
+.ruff_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and runtime state
+*.log
+logs/
+run/
+tmp/
+
+# Generated protobuf Python files
+*_pb2.py
+*_pb2_grpc.py
+*_pb2.pyi
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Optimizer runtime output
+candidates/
+outputs/
+reports/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux/editor temporary files
+*~
+*.swp
+*.swo
+
+TODO.md
