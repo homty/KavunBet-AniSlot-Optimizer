@@ -3,21 +3,19 @@ requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "giantesses-slot-platform"
+name = "kavunbet-optimizer-service"
 version = "0.1.0"
-description = "Backend platform for the Giantesses Attack slot math analyzer"
+description = "REST API and optimization orchestration service for KavunBet slot mathematics"
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "fastapi>=0.162.0,<1.0",
     "uvicorn[standard]>=0.53.0,<1.0",
-    "grpcio>=1.84.1,<2.0",
     "pydantic>=2.14.1,<3.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "grpcio-tools>=1.84.1,<2.0",
-    "httpx>=0.28,<1.0",
+    "httpx2>=2.14,<3.0",
     "pytest>=8.0,<9.0",
     "pytest-asyncio>=1.0,<2.0",
     "ruff>=0.14,<1.0",
@@ -28,8 +26,8 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.setuptools.packages.find]
-include = ["services*"]
-exclude = ["proto*"]
+where = ["src"]
+include = ["kavunbet_optimizer*"]
 
 [tool.ruff]
 line-length = 100
