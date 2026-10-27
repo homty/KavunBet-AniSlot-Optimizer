@@ -1,10 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from kavunbet_optimizer.schemas import (
-    MoveWeights,
-    OptimizationSettings,
-)
+from kavunbet_optimizer.schemas import MoveWeights, OptimizationSettings
 
 
 def test_valid_move_weights() -> None:
@@ -44,7 +41,7 @@ def test_iterations_must_be_positive() -> None:
             seed=42,
             start_temperature=0.2,
             end_temperature=0.0001,
-            report_every=5000,
+            report_every=5_000,
             moves=MoveWeights(
                 within_reel=0.55,
                 cross_reel=0.45,
