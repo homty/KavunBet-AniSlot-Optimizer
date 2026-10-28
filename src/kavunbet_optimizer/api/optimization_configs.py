@@ -13,6 +13,18 @@ from kavunbet_optimizer.schemas.optimization import (
     OptimizationSettings,
     OptimizationSettingsPatch,
 )
+from kavunbet_optimizer.schemas.targets import (
+    IntervalTarget,
+    IntervalTargetPatch,
+)
+from kavunbet_optimizer.schemas.expected_ways_targets import (
+    ExpectedWaysTarget,
+    ExpectedWaysTargetPatch,
+)
+from kavunbet_optimizer.schemas.group_rtp_targets import (
+    GroupRtpTarget,
+    GroupRtpTargetPatch
+)
 
 router = APIRouter(
     prefix="/optimization-configs",
@@ -55,6 +67,56 @@ def patch_objective_settings(
         errors = [{**item, "loc": ("body", *item["loc"])} for item in error.errors()]
         raise RequestValidationError(errors) from error
 
+@router.get("/{mode}/targets")
+def get_targets_settings(mode: GameMode) -> IntervalTarget:
+    return config_repository.get_targets(mode)
+
+@router.patch("/{mode}/target/{symbol}/{value}") 
+def patch_targets_settings(
+    mode: GameMode,
+    patch: IntervalTargetPatch,
+) -> IntervalTargetPatch:
+    try:
+        return config_repository.patch_target(mode, patch)
+    except ValidationError as error:
+        errors = [{**item, "loc": ("body", *item["loc"])} for item in error.errors()]
+        raise RequestValidationError(errors) from error
+"""
+@router.delete("/{mode}/target/{symbol}/{value}")
+def delete_target_settings(mode: GameMode) -> IntervalTarget:
+    return 
+"""
+
+@router.get("/{mode}/expected_ways")
+def get_expected_ways(mode: GameMode) -> ExpectedWaysTarget:
+    return config_repository.get_expected_ways_targets(mode)
+
+@router.patch("/{model}/expected_ways/{symbol}/{value}")
+def patch_expected_ways(
+    mode: GameMode,
+    patch: ExpectedWaysTargetPatch
+) -> ExpectedWaysTarget:
+    try:
+        return config_repository.patch_expected_ways_targets(mode, patch)
+    except ValidationError as error:
+        errors = [{**item, "loc": ("body", *item["loc"])} for item in error.errors()]
+        raise RequestValidationError(errors) from error
+
+@router.get("/{model}/grouped_rtp")
+def get_group_rtp_targets(mode: GameMode) -> GroupRtpTarget:
+    return config_repository.get_group_rtp_targets(mode)
+
+@router.patch("/{model}/grouped_rtp/{symbols}")
+def patch_grouped_rtp(
+    mode: GameMode,
+    patch: GroupRtpTargetPatch,
+) -> GroupRtpTarget:
+    try:
+        return config_repository.patch_group_rtp_target(mode, patch)
+    except ValidationError as error:
+        errors = [{**item, "loc": ("body", *item["loc"])} for item in error.errors()]
+        raise RequestValidationError(errors) from error
+    
 
 @router.get("/{mode}/constraints", response_model=Constraints)
 def get_constraints(mode: GameMode) -> Constraints:
