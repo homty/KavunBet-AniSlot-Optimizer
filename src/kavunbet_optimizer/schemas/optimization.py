@@ -10,6 +10,8 @@ class GameMode(StrEnum):
 
 
 class MoveWeights(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     within_reel: float = Field(ge=0)
     cross_reel: float = Field(ge=0)
     composition: float = Field(ge=0)
@@ -31,6 +33,8 @@ class MoveWeightsPatch(BaseModel):
 
 
 class OptimizationSettings(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     iterations: int = Field(gt=0)
     seed: int
     start_temperature: float = Field(gt=0)

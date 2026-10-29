@@ -1,0 +1,60 @@
+{
+  "source": "../reels/FR6_0.csv",
+  "output_directory": "candidates/free",
+  "source_weight": 0.95,
+  "source_substitutes": [],
+  "fixed_reel_sets": [
+    {
+      "path": "../reels/FR6W_0.csv",
+      "weight": 0.05,
+      "substitutes": ["W"]
+    }
+  ],
+  "window_size": 6,
+  "symbols": ["H1", "H2", "H3", "H4", "H5", "L1", "L2", "L3", "L4", "L5", "L6"],
+  "targets": [],
+  "expected_ways_targets": [],
+  "group_rtp_targets": [
+    {
+      "name": "default",
+      "symbols": ["L1", "L2", "L3", "L4", "L5", "L6"],
+      "min_natural_rtp_pct": 10.5,
+      "max_natural_rtp_pct": 11.5,
+      "weight": 8.0
+    },
+    {
+      "name": "premium",
+      "symbols": ["H1", "H2", "H3", "H4", "H5"],
+      "min_natural_rtp_pct": 11.8,
+      "max_natural_rtp_pct": 12.8,
+      "weight": 8.0
+    }
+  ],
+  "optimization": {
+    "iterations": 50000,
+    "seed": 42,
+    "start_temperature": 0.20,
+    "end_temperature": 0.0001,
+    "report_every": 5000,
+    "moves": {
+      "within_reel": 0.15,
+      "cross_reel": 0.10,
+      "composition": 0.75
+    }
+  },
+  "objective": {
+    "progression_weight": 1.0,
+    "symbol_order_weight": 1.0,
+    "preserve_untargeted_weight": 0.0,
+    "preserve_untargeted_tolerance": 0.20,
+    "preserve_untargeted_ways_weight": 0.0,
+    "preserve_untargeted_ways_tolerance": 0.10,
+    "frequency_orders": [["H1", "H2", "H3", "H4", "H5"]]
+  },
+  "constraints": {
+    "last_allowed_reel": {"H4": 3, "H5": 2},
+    "max_consecutive": {},
+    "global_count_ranges": {},
+    "composition_symbols": ["L1", "L2", "L3", "L4", "L5", "L6", "H1", "H2", "H3"]
+  }
+}

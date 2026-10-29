@@ -1,3 +1,4 @@
+from kavunbet_optimizer.schemas.configuration import OptimizationConfig
 from kavunbet_optimizer.schemas.constraints import Constraints, ConstraintsPatch
 from kavunbet_optimizer.schemas.expected_ways_targets import (
     ExpectedWaysTarget,
@@ -34,6 +35,7 @@ __all__ = [
     "MoveWeightsPatch",
     "ObjectiveSettings",
     "ObjectiveSettingsPatch",
+    "OptimizationConfig",
     "OptimizationSettings",
     "OptimizationSettingsPatch",
 ]

@@ -19,6 +19,7 @@ def test_valid_expected_ways_target_settings() -> None:
     assert target.max_ways == 40
     assert target.weight == 4.0
 
+
 def test_valid_expected_ways_target_patch() -> None:
     patch = ExpectedWaysTargetPatch(
         min_ways=10,
@@ -28,6 +29,7 @@ def test_valid_expected_ways_target_patch() -> None:
     assert patch.min_ways == 10
     assert patch.weight == 2.0
     assert patch.max_ways is None
+
 
 @pytest.mark.parametrize(
     "payload",

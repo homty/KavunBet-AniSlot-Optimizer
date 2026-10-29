@@ -1,0 +1,55 @@
+{
+  "source": "../reels/BR0.csv",
+  "output_directory": "candidates",
+  "source_weight": 0.95,
+  "fixed_reel_sets": [
+    {
+      "path": "../reels/BRW0.csv",
+      "weight": 0.05,
+      "substitutes": ["W"]
+    }
+  ],
+  "window_size": 6,
+  "symbols": ["H1", "H2", "H3", "H4", "H5", "L1", "L2", "L3", "L4", "L5", "L6"],
+  "targets": [
+    {"symbol": "H1", "kind": 3, "min_interval": 25, "max_interval": 35, "weight": 4.0},
+    {"symbol": "H2", "kind": 3, "min_interval": 38, "max_interval": 48, "weight": 4.0},
+    {"symbol": "H3", "kind": 3, "min_interval": 90, "max_interval": 110, "weight": 4.0},
+    {"symbol": "L1", "kind": 6, "min_interval": 90, "max_interval": 100, "weight": 4.0},
+    {"symbol": "L2", "kind": 6, "min_interval": 28, "max_interval": 35, "weight": 4.0},
+    {"symbol": "L3", "kind": 6, "min_interval": 55, "max_interval": 70, "weight": 4.0}
+  ],
+  "expected_ways_targets": [
+    {"symbol": "L1", "kind": 5, "min_ways": 2.15, "max_ways": 2.30, "weight": 16.0},
+    {"symbol": "L2", "kind": 6, "min_ways": 1.02, "max_ways": 1.12, "weight": 16.0}
+  ],
+  "optimization": {
+    "iterations": 50000,
+    "seed": 42,
+    "start_temperature": 0.20,
+    "end_temperature": 0.0001,
+    "report_every": 5000,
+    "moves": {
+      "within_reel": 0.55,
+      "cross_reel": 0.45,
+      "composition": 0.0
+    }
+  },
+  "objective": {
+    "progression_weight": 1.0,
+    "symbol_order_weight": 1.0,
+    "preserve_untargeted_weight": 0.25,
+    "preserve_untargeted_tolerance": 0.20,
+    "preserve_untargeted_ways_weight": 4.0,
+    "preserve_untargeted_ways_tolerance": 0.10,
+    "frequency_orders": [
+      ["H1", "H2", "H3", "H4", "H5"]
+    ]
+  },
+  "constraints": {
+    "last_allowed_reel": {"H4": 3, "H5": 2},
+    "max_consecutive": {},
+    "global_count_ranges": {},
+    "composition_symbols": ["L1", "L2", "L3", "L4", "L5", "L6"]
+  }
+}

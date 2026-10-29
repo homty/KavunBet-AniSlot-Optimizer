@@ -4,8 +4,6 @@ from pydantic import ValidationError
 from kavunbet_optimizer.schemas.targets import IntervalTarget, IntervalTargetPatch
 
 
-
-
 def test_valid_interval() -> None:
     target = IntervalTarget(
         symbol="H1",
@@ -17,6 +15,7 @@ def test_valid_interval() -> None:
     assert target.min_interval == 25
     assert target.max_interval == 35
 
+
 def test_valid_interval_target_patch() -> None:
     patch = IntervalTargetPatch(
         min_interval=20,
@@ -26,18 +25,22 @@ def test_valid_interval_target_patch() -> None:
     assert patch.max_interval == 35
     assert patch.min_interval == 20
 
+
 @pytest.mark.parametrize(
     "payload",
     [
-        {"min_interval": 50},
-        {"max_interval": 0}
+        {"min_interval": 0},
+        {"max_interval": 0},
+        {"weight": 0},
+        {"unknown": 1},
     ],
 )
 def test_invalid_interval_target_patch(payload: dict[str, object]) -> None:
-   with pytest.raises(ValidationError):
-       IntervalTargetPatch(**payload)
+    with pytest.raises(ValidationError):
+        IntervalTargetPatch(**payload)
 
-def test_invalid_expected_ways_range_is_rejected() -> None:
+
+def test_invalid_interval_range_is_rejected() -> None:
     with pytest.raises(ValidationError):
         IntervalTarget(
             symbol="H3",
@@ -45,4 +48,3 @@ def test_invalid_expected_ways_range_is_rejected() -> None:
             min_interval=50,
             max_interval=5,
         )
-

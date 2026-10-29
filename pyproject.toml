@@ -29,6 +29,9 @@ asyncio_mode = "auto"
 where = ["src"]
 include = ["kavunbet_optimizer*"]
 
+[tool.setuptools.package-data]
+kavunbet_optimizer = ["configs/*.json"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

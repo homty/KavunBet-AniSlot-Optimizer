@@ -34,6 +34,16 @@ def test_move_weights_cannot_all_be_zero() -> None:
         )
 
 
+def test_move_weights_reject_unknown_fields() -> None:
+    with pytest.raises(ValidationError):
+        MoveWeights(
+            within_reel=0.5,
+            cross_reel=0.5,
+            composition=0.0,
+            unknown=1,
+        )
+
+
 def test_iterations_must_be_positive() -> None:
     with pytest.raises(ValidationError):
         OptimizationSettings(

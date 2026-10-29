@@ -1,3 +1,4 @@
+from kavunbet_optimizer.schemas.configuration import OptimizationConfig
 from kavunbet_optimizer.schemas.constraints import Constraints
 from kavunbet_optimizer.schemas.expected_ways_targets import ExpectedWaysTarget
 from kavunbet_optimizer.schemas.group_rtp_targets import GroupRtpTarget
@@ -8,6 +9,8 @@ from kavunbet_optimizer.schemas.optimization import (
     OptimizationSettings,
 )
 from kavunbet_optimizer.schemas.targets import IntervalTarget
+
+DEFAULT_SYMBOLS = ["H1", "H2", "H3", "H4", "H5", "L1", "L2", "L3", "L4", "L5", "L6"]
 
 
 def create_default_optimization_settings() -> dict[GameMode, OptimizationSettings]:
@@ -201,4 +204,26 @@ def create_default_constraints() -> dict[GameMode, Constraints]:
                 "H3",
             ],
         ),
+    }
+
+
+def create_default_configs() -> dict[GameMode, OptimizationConfig]:
+    optimization = create_default_optimization_settings()
+    objectives = create_default_objectives()
+    targets = create_default_targets()
+    expected_ways_targets = create_default_expected_ways_targets()
+    group_rtp_targets = create_default_group_rtp_targets()
+    constraints = create_default_constraints()
+
+    return {
+        mode: OptimizationConfig(
+            symbols=DEFAULT_SYMBOLS,
+            optimization=optimization[mode],
+            objective=objectives[mode],
+            targets=targets[mode],
+            expected_ways_targets=expected_ways_targets[mode],
+            group_rtp_targets=group_rtp_targets[mode],
+            constraints=constraints[mode],
+        )
+        for mode in GameMode
     }
