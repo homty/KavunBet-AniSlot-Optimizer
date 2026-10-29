@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from kavunbet_optimizer.domain.stored_configuration import StoredOptimizationConfig
 from kavunbet_optimizer.schemas.configuration import OptimizationConfig
 from kavunbet_optimizer.schemas.constraints import Constraints, ConstraintsPatch
 from kavunbet_optimizer.schemas.expected_ways_targets import (
@@ -17,6 +18,15 @@ from kavunbet_optimizer.schemas.targets import IntervalTarget, IntervalTargetPat
 
 
 class OptimizationConfigRepository(Protocol):
+    def get(self, mode: GameMode) -> StoredOptimizationConfig: ...
+
+    def save(
+        self,
+        mode: GameMode,
+        config: OptimizationConfig,
+        expected_version: str,
+    ) -> StoredOptimizationConfig: ...
+
     def get_config(self, mode: GameMode) -> OptimizationConfig: ...
 
     def get_optimization_settings(self, mode: GameMode) -> OptimizationSettings: ...

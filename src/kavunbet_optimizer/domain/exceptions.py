@@ -12,3 +12,7 @@ class ConfigResourceAlreadyExistsError(ConfigResourceError):
 
 class ConfigResourceIdentityMismatchError(ConfigResourceError):
     """Raised when a request body identity differs from its URL identity."""
+
+
+class ConfigVersionConflictError(ConfigResourceError):
+    """Raised when a configuration was changed after it was read."""

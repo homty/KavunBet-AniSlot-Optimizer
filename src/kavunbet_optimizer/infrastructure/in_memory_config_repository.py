@@ -1,11 +1,14 @@
 from collections.abc import Callable
+from threading import RLock
 from typing import TypeVar
 
 from kavunbet_optimizer.domain.exceptions import (
     ConfigResourceAlreadyExistsError,
     ConfigResourceIdentityMismatchError,
     ConfigResourceNotFoundError,
+    ConfigVersionConflictError,
 )
+from kavunbet_optimizer.domain.stored_configuration import StoredOptimizationConfig
 from kavunbet_optimizer.infrastructure.default_configs import create_default_configs
 from kavunbet_optimizer.schemas.configuration import OptimizationConfig
 from kavunbet_optimizer.schemas.constraints import Constraints, ConstraintsPatch
@@ -36,6 +39,8 @@ class InMemoryOptimizationConfigRepository:
         self._configs = {
             mode: config.model_copy(deep=True) for mode, config in initial_configs.items()
         }
+        self._versions = {mode: 1 for mode in self._configs}
+        self._lock = RLock()
 
     def _after_change(self, mode: GameMode) -> None:
         """Allow persistent repositories to commit a validated mutation."""
@@ -45,21 +50,55 @@ class InMemoryOptimizationConfigRepository:
         mode: GameMode,
         mutation: Callable[[], ResultT],
     ) -> ResultT:
-        previous = self._configs[mode].model_copy(deep=True)
+        with self._lock:
+            previous_config = self._configs[mode].model_copy(deep=True)
+            previous_version = self._versions[mode]
 
-        try:
-            result = mutation()
-            self._configs[mode] = OptimizationConfig.model_validate(
-                self._configs[mode].model_dump()
+            try:
+                result = mutation()
+                self._configs[mode] = OptimizationConfig.model_validate(
+                    self._configs[mode].model_dump()
+                )
+                self._after_change(mode)
+                self._versions[mode] = previous_version + 1
+                return result
+            except Exception:
+                self._configs[mode] = previous_config
+                self._versions[mode] = previous_version
+                raise
+
+    def get(self, mode: GameMode) -> StoredOptimizationConfig:
+        with self._lock:
+            return StoredOptimizationConfig(
+                config=self._configs[mode].model_copy(deep=True),
+                version=str(self._versions[mode]),
             )
-            self._after_change(mode)
-            return result
-        except Exception:
-            self._configs[mode] = previous
-            raise
+
+    def save(
+        self,
+        mode: GameMode,
+        config: OptimizationConfig,
+        expected_version: str,
+    ) -> StoredOptimizationConfig:
+        with self._lock:
+            current_version = str(self._versions[mode])
+            if expected_version != current_version:
+                raise ConfigVersionConflictError(
+                    f"configuration version conflict for {mode}: "
+                    f"expected {expected_version}, current {current_version}"
+                )
+
+            replacement = config.model_copy(deep=True)
+
+            def replace_config() -> None:
+                self._configs[mode] = replacement
+
+            self._commit_mutation(mode, replace_config)
+            return self.get(mode)
 
     def get_config(self, mode: GameMode) -> OptimizationConfig:
-        return self._configs[mode].model_copy(deep=True)
+        with self._lock:
+            return self._configs[mode].model_copy(deep=True)
 
     def get_optimization_settings(self, mode: GameMode) -> OptimizationSettings:
         return self._configs[mode].optimization.model_copy(deep=True)
