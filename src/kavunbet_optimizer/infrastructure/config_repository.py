@@ -119,7 +119,7 @@ class OptimizationConfigRepository:
 
         raise KeyError(f"target not found: {symbol}/{kind}")
 
-    def patch_expected_ways_targets(
+    def patch_expected_ways_target(
         self, mode: GameMode, symbol: str, kind: int, patch: ExpectedWaysTargetPatch
     ) -> ExpectedWaysTarget:
         for index, current in enumerate(self._expected_ways_targets[mode]):
@@ -163,5 +163,3 @@ class OptimizationConfigRepository:
         self._constraints[mode] = updated
 
         return updated
-
-# def delete
