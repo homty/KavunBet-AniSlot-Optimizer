@@ -66,8 +66,12 @@ def get_optimization_job(
     return OptimizationJobResponse.model_validate(job, from_attributes=True)
 
 
-@router.post("/{job_id}/cancel", response_model=OptimizationJobResponse, status_code=status.HTTP_202_ACCEPTED)
-def request_optimization_job_cancellation(job_id: UUID, service: OptimizationJobServiceDependency) -> OptimizationJobResponse:
+@router.post(
+    "/{job_id}/cancel", response_model=OptimizationJobResponse, status_code=status.HTTP_202_ACCEPTED
+)
+def request_optimization_job_cancellation(
+    job_id: UUID, service: OptimizationJobServiceDependency
+) -> OptimizationJobResponse:
     try:
         job = service.request_cancellation(job_id)
     except OptimizationJobErrors.OptimizationJobNotFoundError as error:

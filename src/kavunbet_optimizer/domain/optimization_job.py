@@ -20,6 +20,23 @@ class JobStatus(StrEnum):
     TIMED_OUT = "timed_out"
 
 
+WORKER_STATUS_TRANSITIONS: dict[JobStatus, frozenset[JobStatus]] = {
+    JobStatus.QUEUED: frozenset(
+        {
+            JobStatus.RUNNING,
+        }
+    ),
+    JobStatus.RUNNING: frozenset(
+        {
+            JobStatus.COMPLETED,
+            JobStatus.FAILED,
+            JobStatus.TIMED_OUT,
+        }
+    ),
+    JobStatus.CANCELLATION_REQUESTED: frozenset({JobStatus.CANCELLED}),
+}
+
+
 class OptimizationJob(BaseModel):
     id: UUID
     project_id: str
@@ -44,5 +61,23 @@ class OptimizationJob(BaseModel):
             )
         return self.model_copy(
             update={"status": JobStatus.CANCELLATION_REQUESTED, "updated_at": changed_at},
+            deep=True,
+        )
+
+    def transition_to(self, new_status: JobStatus, changed_at: datetime) -> Self:
+        if self.status == new_status:
+            return self.model_copy(deep=True)
+
+        allowed_statuses = WORKER_STATUS_TRANSITIONS.get(self.status, frozenset())
+        if new_status not in allowed_statuses:
+            raise OptimizationJobErrors.InvalidJobStatusTransitionError(
+                f"cannot transition job {self.id} from {self.status} to {new_status}"
+            )
+
+        return self.model_copy(
+            update={
+                "status": new_status,
+                "updated_at": changed_at,
+            },
             deep=True,
         )

@@ -74,3 +74,77 @@ def test_request_cancellation_rejects_terminal_job(
         match=terminal_status.value,
     ):
         job.request_cancellation(datetime(2026, 1, 2, tzinfo=UTC))
+
+
+@pytest.mark.parametrize(
+    ("initial_status", "new_status"),
+    [
+        (JobStatus.QUEUED, JobStatus.RUNNING),
+        (JobStatus.RUNNING, JobStatus.COMPLETED),
+        (JobStatus.RUNNING, JobStatus.FAILED),
+        (JobStatus.RUNNING, JobStatus.TIMED_OUT),
+        (
+            JobStatus.CANCELLATION_REQUESTED,
+            JobStatus.CANCELLED,
+        ),
+    ],
+)
+def test_transition_to_allows_worker_transition(
+    initial_status: JobStatus,
+    new_status: JobStatus,
+) -> None:
+    job = make_job(initial_status)
+    changed_at = datetime(2026, 1, 2, tzinfo=UTC)
+
+    updated = job.transition_to(new_status, changed_at)
+
+    assert updated.status == new_status
+    assert updated.updated_at == changed_at
+    assert updated is not job
+    assert job.status == initial_status
+    assert job.updated_at != changed_at
+
+
+def test_transition_to_same_status_returns_unchanged_copy() -> None:
+    job = make_job(JobStatus.COMPLETED)
+    changed_at = datetime(2026, 1, 2, tzinfo=UTC)
+
+    repeated = job.transition_to(
+        JobStatus.COMPLETED,
+        changed_at,
+    )
+
+    assert repeated == job
+    assert repeated is not job
+    assert repeated.updated_at == job.updated_at
+
+
+@pytest.mark.parametrize(
+    ("initial_status", "new_status"),
+    [
+        (JobStatus.QUEUED, JobStatus.COMPLETED),
+        (JobStatus.RUNNING, JobStatus.CANCELLED),
+        (
+            JobStatus.CANCELLATION_REQUESTED,
+            JobStatus.COMPLETED,
+        ),
+        (JobStatus.COMPLETED, JobStatus.RUNNING),
+        (JobStatus.FAILED, JobStatus.COMPLETED),
+        (JobStatus.CANCELLED, JobStatus.RUNNING),
+        (JobStatus.TIMED_OUT, JobStatus.RUNNING),
+    ],
+)
+def test_transition_to_rejects_forbidden_transition(
+    initial_status: JobStatus,
+    new_status: JobStatus,
+) -> None:
+    job = make_job(initial_status)
+
+    with pytest.raises(
+        OptimizationJobErrors.InvalidJobStatusTransitionError,
+        match=f"from {initial_status} to {new_status}",
+    ):
+        job.transition_to(
+            new_status,
+            datetime(2026, 1, 2, tzinfo=UTC),
+        )

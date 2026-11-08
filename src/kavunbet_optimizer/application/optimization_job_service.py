@@ -66,3 +66,12 @@ class OptimizationJobService:
             return updated
 
         return self._job_repository.save(updated)
+
+    def transition_job(self, job_id: UUID, new_status: JobStatus) -> OptimizationJob:
+        job = self._job_repository.get(job_id)
+        updated = job.transition_to(new_status, datetime.now(UTC))
+
+        if updated == job:
+            return updated
+
+        return self._job_repository.save(updated)
