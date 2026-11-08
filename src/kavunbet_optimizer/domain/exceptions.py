@@ -16,3 +16,19 @@ class ConfigResourceIdentityMismatchError(ConfigResourceError):
 
 class ConfigVersionConflictError(ConfigResourceError):
     """Raised when a configuration was changed after it was read."""
+
+
+class OptimizationJobError(Exception):
+    """Base error for optimization jobs."""
+
+
+class OptimizationJobNotFoundError(OptimizationJobError):
+    """Raised when an optimization job does not exist."""
+
+
+class OptimizationJobAlreadyExistsError(OptimizationJobError):
+    """Raised when an optimization job ID already exists."""
+
+
+class IdempotencyKeyConflictError(OptimizationJobError):
+    """Raised when an idempotency key is already assigned."""
