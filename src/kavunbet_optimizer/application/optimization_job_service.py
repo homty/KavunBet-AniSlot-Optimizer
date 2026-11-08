@@ -1,7 +1,7 @@
 """Read configuration snapshots and submit durable optimization jobs."""
 
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from kavunbet_optimizer.domain.config_repository import OptimizationConfigRepository
 from kavunbet_optimizer.domain.exceptions import OptimizationJobErrors
@@ -13,11 +13,17 @@ from kavunbet_optimizer.schemas.optimization import GameMode
 
 
 class OptimizationJobService:
-    def __init__(self, job_repository: OptimizationJobRepository, config_repository: OptimizationConfigRepository) -> None:
+    def __init__(
+        self,
+        job_repository: OptimizationJobRepository,
+        config_repository: OptimizationConfigRepository,
+    ) -> None:
         self._job_repository = job_repository
         self._config_repository = config_repository
 
-    def submit(self, project_id: str, engine_id: str, game_mode: GameMode, idempotency_key: str) -> OptimizationJob:
+    def submit(
+        self, project_id: str, engine_id: str, game_mode: GameMode, idempotency_key: str
+    ) -> OptimizationJob:
         existing_job = self._job_repository.get_by_idempotency_key(idempotency_key)
 
         if existing_job is not None:
@@ -48,3 +54,15 @@ class OptimizationJobService:
         )
 
         return self._job_repository.create(job)
+
+    def get_job(self, job_id: UUID) -> OptimizationJob:
+        return self._job_repository.get(job_id)
+
+    def request_cancellation(self, job_id: UUID) -> OptimizationJob:
+        job = self._job_repository.get(job_id)
+        updated = job.request_cancellation(datetime.now(UTC))
+
+        if updated == job:
+            return updated
+
+        return self._job_repository.save(updated)

@@ -32,3 +32,6 @@ class OptimizationJobErrors:
 
     class IdempotencyKeyConflictError(OptimizationJobError):
         """Raised when an idempotency key is already assigned."""
+
+    class InvalidJobStatusTransitionError(OptimizationJobError):
+        """Raised when a job status transition is not permitted."""

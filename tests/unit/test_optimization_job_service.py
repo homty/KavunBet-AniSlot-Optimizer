@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 
 from kavunbet_optimizer.application.optimization_job_service import (
@@ -75,3 +77,96 @@ def test_submit_rejects_reused_key_for_different_request() -> None:
             game_mode=GameMode.BASE,
             idempotency_key="request-1",
         )
+
+
+def test_get_job_returns_submitted_job() -> None:
+    service = create_service()
+    submitted = service.submit(
+        project_id="giantesses-attack",
+        engine_id="giantesses-math-engine",
+        game_mode=GameMode.BASE,
+        idempotency_key="request-1",
+    )
+
+    retrieved = service.get_job(submitted.id)
+
+    assert retrieved == submitted
+    assert retrieved is not submitted
+
+
+def test_get_job_rejects_unknown_job_id() -> None:
+    service = create_service()
+    unknown_id = uuid4()
+
+    with pytest.raises(
+        OptimizationJobErrors.OptimizationJobNotFoundError,
+        match=str(unknown_id),
+    ):
+        service.get_job(unknown_id)
+
+
+def test_request_cancellation_updates_and_persists_job() -> None:
+    service = create_service()
+    submitted = service.submit(
+        project_id="giantesses-attack",
+        engine_id="giantesses-math-engine",
+        game_mode=GameMode.BASE,
+        idempotency_key="request-1",
+    )
+
+    cancellation_requested = service.request_cancellation(submitted.id)
+    persisted = service.get_job(submitted.id)
+
+    assert cancellation_requested.status == JobStatus.CANCELLATION_REQUESTED
+    assert cancellation_requested.updated_at >= submitted.updated_at
+    assert persisted == cancellation_requested
+    assert submitted.status == JobStatus.QUEUED
+
+
+def test_repeated_cancellation_request_returns_unchanged_job() -> None:
+    service = create_service()
+    submitted = service.submit(
+        project_id="giantesses-attack",
+        engine_id="giantesses-math-engine",
+        game_mode=GameMode.BASE,
+        idempotency_key="request-1",
+    )
+    first = service.request_cancellation(submitted.id)
+
+    repeated = service.request_cancellation(submitted.id)
+
+    assert repeated == first
+    assert repeated.updated_at == first.updated_at
+
+
+def test_request_cancellation_rejects_unknown_job() -> None:
+    service = create_service()
+    unknown_id = uuid4()
+
+    with pytest.raises(
+        OptimizationJobErrors.OptimizationJobNotFoundError,
+        match=str(unknown_id),
+    ):
+        service.request_cancellation(unknown_id)
+
+
+def test_request_cancellation_rejects_terminal_job() -> None:
+    job_repository = InMemoryOptimizationJobRepository()
+    service = OptimizationJobService(
+        job_repository=job_repository,
+        config_repository=InMemoryOptimizationConfigRepository(),
+    )
+    submitted = service.submit(
+        project_id="giantesses-attack",
+        engine_id="giantesses-math-engine",
+        game_mode=GameMode.BASE,
+        idempotency_key="request-1",
+    )
+    completed = submitted.model_copy(update={"status": JobStatus.COMPLETED})
+    job_repository.save(completed)
+
+    with pytest.raises(
+        OptimizationJobErrors.InvalidJobStatusTransitionError,
+        match=JobStatus.COMPLETED.value,
+    ):
+        service.request_cancellation(submitted.id)
