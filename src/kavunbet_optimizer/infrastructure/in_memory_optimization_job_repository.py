@@ -1,11 +1,7 @@
 from threading import RLock
 from uuid import UUID
 
-from kavunbet_optimizer.domain.exceptions import (
-    IdempotencyKeyConflictError,
-    OptimizationJobAlreadyExistsError,
-    OptimizationJobNotFoundError,
-)
+from kavunbet_optimizer.domain.exceptions import OptimizationJobErrors
 from kavunbet_optimizer.domain.optimization_job import OptimizationJob
 
 
@@ -18,12 +14,12 @@ class InMemoryOptimizationJobRepository:
     def create(self, job: OptimizationJob) -> OptimizationJob:
         with self._lock:
             if job.id in self._jobs:
-                raise OptimizationJobAlreadyExistsError(
+                raise OptimizationJobErrors.OptimizationJobAlreadyExistsError(
                     f"optimization job already exists: {job.id}"
                 )
 
             if job.idempotency_key in self._idempotency_keys:
-                raise IdempotencyKeyConflictError(
+                raise OptimizationJobErrors.IdempotencyKeyConflictError(
                     f"idempotency key already exists: {job.idempotency_key}"
                 )
 
@@ -38,7 +34,9 @@ class InMemoryOptimizationJobRepository:
             job = self._jobs.get(job_id)
 
             if job is None:
-                raise OptimizationJobNotFoundError(f"optimization job not found: {job_id}")
+                raise OptimizationJobErrors.OptimizationJobNotFoundError(
+                    f"optimization job not found: {job_id}"
+                )
             return job.model_copy(deep=True)
 
     def get_by_idempotency_key(self, idempotency_key: str) -> OptimizationJob | None:
@@ -56,12 +54,14 @@ class InMemoryOptimizationJobRepository:
             current = self._jobs.get(job.id)
 
             if current is None:
-                raise OptimizationJobNotFoundError(f"optimization job not found: {job.id}")
+                raise OptimizationJobErrors.OptimizationJobNotFoundError(
+                    f"optimization job not found: {job.id}"
+                )
 
             key_owner = self._idempotency_keys.get(job.idempotency_key)
 
             if key_owner is not None and key_owner != job.id:
-                raise IdempotencyKeyConflictError(
+                raise OptimizationJobErrors.IdempotencyKeyConflictError(
                     f"idempotency key already exists: {job.idempotency_key}"
                 )
 

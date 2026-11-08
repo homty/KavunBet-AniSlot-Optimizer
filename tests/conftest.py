@@ -8,6 +8,9 @@ from fastapi.testclient import TestClient
 from kavunbet_optimizer.infrastructure.in_memory_config_repository import (
     InMemoryOptimizationConfigRepository,
 )
+from kavunbet_optimizer.infrastructure.in_memory_optimization_job_repository import (
+    InMemoryOptimizationJobRepository,
+)
 from kavunbet_optimizer.main import create_app
 
 
@@ -16,10 +19,11 @@ from kavunbet_optimizer.main import create_app
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     repository = InMemoryOptimizationConfigRepository()
+    job_repository = InMemoryOptimizationJobRepository()
 
     # Inject a fresh in-memory repository into a fresh application for this test.
     # The production application uses the JSON-backed repository instead.
-    app = create_app(repository)
+    app = create_app(repository, job_repository)
 
     with TestClient(app) as test_client:
         yield test_client

@@ -3,11 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from kavunbet_optimizer.domain.exceptions import (
-    IdempotencyKeyConflictError,
-    OptimizationJobAlreadyExistsError,
-    OptimizationJobNotFoundError,
-)
+from kavunbet_optimizer.domain.exceptions import OptimizationJobErrors
 from kavunbet_optimizer.domain.optimization_job import (
     JobStatus,
     OptimizationJob,
@@ -59,7 +55,10 @@ def test_create_rejects_duplicate_job_id() -> None:
 
     repository.create(job)
 
-    with pytest.raises(OptimizationJobAlreadyExistsError, match=str(job.id)):
+    with pytest.raises(
+        OptimizationJobErrors.OptimizationJobAlreadyExistsError,
+        match=str(job.id),
+    ):
         repository.create(job)
 
 
@@ -71,7 +70,7 @@ def test_create_rejects_duplicate_idempotency_key() -> None:
     repository.create(first_job)
 
     with pytest.raises(
-        IdempotencyKeyConflictError,
+        OptimizationJobErrors.IdempotencyKeyConflictError,
         match="same-request",
     ):
         repository.create(second_job)
@@ -82,7 +81,7 @@ def test_get_rejects_unknown_job_id() -> None:
     unknown_id = uuid4()
 
     with pytest.raises(
-        OptimizationJobNotFoundError,
+        OptimizationJobErrors.OptimizationJobNotFoundError,
         match=str(unknown_id),
     ):
         repository.get(unknown_id)
@@ -136,7 +135,7 @@ def test_save_rejects_unknown_job() -> None:
     job = make_job()
 
     with pytest.raises(
-        OptimizationJobNotFoundError,
+        OptimizationJobErrors.OptimizationJobNotFoundError,
         match=str(job.id),
     ):
         repository.save(job)
@@ -153,7 +152,7 @@ def test_save_rejects_idempotency_key_owned_by_another_job() -> None:
     conflicting_update = second_job.model_copy(update={"idempotency_key": "first-request"})
 
     with pytest.raises(
-        IdempotencyKeyConflictError,
+        OptimizationJobErrors.IdempotencyKeyConflictError,
         match="first-request",
     ):
         repository.save(conflicting_update)
