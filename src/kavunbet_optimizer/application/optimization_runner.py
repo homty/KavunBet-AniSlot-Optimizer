@@ -27,6 +27,10 @@ ProgressCallback = Callable[[OptimizationProgress], None]
 CancellationCheck = Callable[[], bool]
 
 
+class OptimizationCancelledError(RuntimeError):
+    """Raised when cancellation is requested during a local optimization run."""
+
+
 class OptimizationRunner(Protocol):
     def optimize(
         self,
